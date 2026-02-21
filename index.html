@@ -522,16 +522,81 @@ section {
   margin-bottom: 50px;
 }
 
-.pages-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  position: relative;
+.quick-jump-wrap {
+  position: sticky;
+  top: 74px;
+  z-index: 35;
+  margin-bottom: 18px;
 }
 
-/* Page wrapper */
-.page-wrapper {
-  position: relative;
+.quick-jump {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: rgba(17, 23, 32, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.quick-jump button {
+  border: 1px solid var(--border-subtle);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.quick-jump button:hover,
+.quick-jump button.active {
+  color: var(--text-primary);
+  border-color: var(--border-accent);
+  background: rgba(255,184,0,0.1);
+}
+
+.program-tabs {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.day-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.day-tab-btn {
+  border: 1px solid var(--border-subtle);
+  background: rgba(255,255,255,0.02);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.day-tab-btn:hover,
+.day-tab-btn.active {
+  color: #080b10;
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.day-panel {
+  display: none;
+}
+
+.day-panel.active {
+  display: block;
 }
 
 .a4-page {
@@ -659,6 +724,56 @@ section {
   font-weight: 700;
   color: var(--gold);
   margin-bottom: 16px;
+}
+
+.editable-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.editable-input:focus {
+  outline: none;
+  border-color: var(--border-accent);
+  background: rgba(255,184,0,0.06);
+}
+
+.week-cell {
+  color: var(--gold);
+  font-weight: 800;
+  text-align: center;
+}
+
+.session-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+.session-table thead th {
+  background: rgba(255,255,255,0.03);
+  color: var(--gold);
+  padding: 12px 10px;
+  font-size: 0.78rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.session-table tbody td {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 10px;
+  color: var(--text-secondary);
+}
+
+.done-check {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold);
+  cursor: pointer;
 }
 
 /* ============================================
@@ -944,6 +1059,8 @@ footer {
   .prog-cards { grid-template-columns: 1fr; }
   .term-grid { grid-template-columns: 1fr; }
   .hero-glass-card { padding: 36px 24px 30px; }
+  .quick-jump-wrap { top: 66px; }
+  .day-tabs { flex-wrap: nowrap; overflow-x: auto; }
   .a4-page { padding: 28px 18px 22px; }
   .ex-table { font-size: 0.8rem; }
   .ex-alt { font-size: 0.7rem; }
@@ -993,7 +1110,6 @@ footer {
   <div class="container header-inner">
     <div class="brand-logo"><img src="assets/logo.png" alt="عدة بلس"></div>
     <div class="header-actions">
-      <button class="nav-cta nav-print" id="printPdfBtn" type="button">تحميل PDF</button>
       <a href="#program" class="nav-cta">استعرض البرنامج</a>
     </div>
   </div>
@@ -1164,25 +1280,37 @@ footer {
       <h2 class="section-title">هيكل الأيام الخمسة</h2>
       <div class="section-divider"></div>
     </div>
+    <div class="quick-jump-wrap reveal">
+      <div class="quick-jump" id="quickJump">
+        <button type="button" data-tab-target="day1" class="active">Day 1</button>
+        <button type="button" data-tab-target="day2">Day 2</button>
+        <button type="button" data-tab-target="day3">Day 3</button>
+        <button type="button" data-tab-target="day4">Day 4</button>
+        <button type="button" data-tab-target="day5">Day 5</button>
+        <button type="button" data-tab-target="progression-tab">Progression</button>
+        <button type="button" data-tab-target="tracking-tab">Tracking</button>
+      </div>
+    </div>
 
-    <div class="pages-stack">
+    <div class="program-tabs reveal">
+      <div class="day-tabs" id="dayTabs">
+        <button class="day-tab-btn active" data-tab-target="day1" type="button">Push</button>
+        <button class="day-tab-btn" data-tab-target="day2" type="button">Pull</button>
+        <button class="day-tab-btn" data-tab-target="day3" type="button">Legs</button>
+        <button class="day-tab-btn" data-tab-target="day4" type="button">Upper</button>
+        <button class="day-tab-btn" data-tab-target="day5" type="button">Lower</button>
+        <button class="day-tab-btn" data-tab-target="progression-tab" type="button">Progression</button>
+        <button class="day-tab-btn" data-tab-target="tracking-tab" type="button">Tracking</button>
+      </div>
 
-      <!-- PAGE 1 — Day 1 Push (VISIBLE) -->
-      <div class="page-wrapper reveal">
+      <div id="day1" class="day-panel active">
         <div class="a4-page">
           <span class="page-number">01 / 07</span>
           <div class="page-title">Day 1 — Push</div>
           <div class="page-subtitle">الصدر + الكتف + الترايسبس</div>
           <div class="split-badge">Push Day</div>
           <table class="ex-table">
-            <thead>
-              <tr>
-                <th>التمرين</th>
-                <th style="text-align:center">البديل</th>
-                <th style="text-align:center">السيتات</th>
-                <th style="text-align:center">التكرارات</th>
-              </tr>
-            </thead>
+            <thead><tr><th>التمرين</th><th style="text-align:center">البديل</th><th style="text-align:center">السيتات</th><th style="text-align:center">التكرارات</th></tr></thead>
             <tbody>
               <tr><td class="ex-name">Incline Press</td><td class="ex-alt">Barbell / Dumbbell / Machine</td><td class="ex-sets">3</td><td class="ex-reps">5–8</td></tr>
               <tr><td class="ex-name">Flat Chest Press</td><td class="ex-alt">Barbell / Dumbbell / Machine</td><td class="ex-sets">2</td><td class="ex-reps">6–9</td></tr>
@@ -1195,22 +1323,14 @@ footer {
         </div>
       </div>
 
-      <!-- PAGE 2 — Day 2 Pull (VISIBLE) -->
-      <div class="page-wrapper reveal">
+      <div id="day2" class="day-panel">
         <div class="a4-page">
           <span class="page-number">02 / 07</span>
           <div class="page-title">Day 2 — Pull</div>
           <div class="page-subtitle">الظهر + البايسبس</div>
           <div class="split-badge">Pull Day</div>
           <table class="ex-table">
-            <thead>
-              <tr>
-                <th>التمرين</th>
-                <th style="text-align:center">البديل</th>
-                <th style="text-align:center">السيتات</th>
-                <th style="text-align:center">التكرارات</th>
-              </tr>
-            </thead>
+            <thead><tr><th>التمرين</th><th style="text-align:center">البديل</th><th style="text-align:center">السيتات</th><th style="text-align:center">التكرارات</th></tr></thead>
             <tbody>
               <tr><td class="ex-name">Vertical Pull</td><td class="ex-alt">Pull-ups / Lat Pulldown</td><td class="ex-sets">3</td><td class="ex-reps">6–9</td></tr>
               <tr><td class="ex-name">Chest Supported Row</td><td class="ex-alt">DB row bench / Machine row</td><td class="ex-sets">2</td><td class="ex-reps">8–10</td></tr>
@@ -1223,22 +1343,14 @@ footer {
         </div>
       </div>
 
-      <!-- PAGE 3 — Day 3 Legs (LOCKED) -->
-      <div class="page-wrapper reveal">
+      <div id="day3" class="day-panel">
         <div class="a4-page">
           <span class="page-number">03 / 07</span>
           <div class="page-title">Day 3 — Legs (Quad Focus)</div>
           <div class="page-subtitle">الأرجل + البطن</div>
           <div class="split-badge">Legs Day</div>
           <table class="ex-table">
-            <thead>
-              <tr>
-                <th>التمرين</th>
-                <th style="text-align:center">البديل</th>
-                <th style="text-align:center">السيتات</th>
-                <th style="text-align:center">التكرارات</th>
-              </tr>
-            </thead>
+            <thead><tr><th>التمرين</th><th style="text-align:center">البديل</th><th style="text-align:center">السيتات</th><th style="text-align:center">التكرارات</th></tr></thead>
             <tbody>
               <tr><td class="ex-name">Squat Pattern</td><td class="ex-alt">Back Squat / Front Squat / Hack Squat</td><td class="ex-sets">3</td><td class="ex-reps">6–10</td></tr>
               <tr><td class="ex-name">Leg Press</td><td class="ex-alt">Any leg press angle</td><td class="ex-sets">2</td><td class="ex-reps">10–12</td></tr>
@@ -1251,22 +1363,14 @@ footer {
         </div>
       </div>
 
-      <!-- PAGE 4 — Day 4 Upper (LOCKED) -->
-      <div class="page-wrapper reveal">
+      <div id="day4" class="day-panel">
         <div class="a4-page">
           <span class="page-number">04 / 07</span>
           <div class="page-title">Day 4 — Upper (Balanced Upper)</div>
           <div class="page-subtitle">2 Back / 2 Chest / 2 Shoulders / 1 Tri / 1 Bi</div>
           <div class="split-badge">Upper Day</div>
           <table class="ex-table">
-            <thead>
-              <tr>
-                <th>التمرين</th>
-                <th style="text-align:center">البديل</th>
-                <th style="text-align:center">السيتات</th>
-                <th style="text-align:center">التكرارات</th>
-              </tr>
-            </thead>
+            <thead><tr><th>التمرين</th><th style="text-align:center">البديل</th><th style="text-align:center">السيتات</th><th style="text-align:center">التكرارات</th></tr></thead>
             <tbody>
               <tr><td class="ex-name">Incline Press</td><td class="ex-alt">Barbell / Dumbbell / Machine</td><td class="ex-sets">2</td><td class="ex-reps">5–6</td></tr>
               <tr><td class="ex-name">Chest Fly</td><td class="ex-alt">Cable / Machine</td><td class="ex-sets">2</td><td class="ex-reps">8–12</td></tr>
@@ -1281,22 +1385,14 @@ footer {
         </div>
       </div>
 
-      <!-- PAGE 5 — Day 5 Lower (LOCKED) -->
-      <div class="page-wrapper reveal">
+      <div id="day5" class="day-panel">
         <div class="a4-page">
           <span class="page-number">05 / 07</span>
           <div class="page-title">Day 5 — Lower (Full Lower + Abs)</div>
           <div class="page-subtitle">الأرجل الكاملة + البطن</div>
           <div class="split-badge">Lower Day</div>
           <table class="ex-table">
-            <thead>
-              <tr>
-                <th>التمرين</th>
-                <th style="text-align:center">البديل</th>
-                <th style="text-align:center">السيتات</th>
-                <th style="text-align:center">التكرارات</th>
-              </tr>
-            </thead>
+            <thead><tr><th>التمرين</th><th style="text-align:center">البديل</th><th style="text-align:center">السيتات</th><th style="text-align:center">التكرارات</th></tr></thead>
             <tbody>
               <tr><td class="ex-name">Romanian Deadlift</td><td class="ex-alt">Stiff-leg deadlift / good morning (light) / machine hinge</td><td class="ex-sets">3</td><td class="ex-reps">6–8</td></tr>
               <tr><td class="ex-name">Bulgarian Split Squat / Reverse Lunge</td><td class="ex-alt">split squat / walking lunges</td><td class="ex-sets">2</td><td class="ex-reps">8–10 each</td></tr>
@@ -1310,51 +1406,52 @@ footer {
         </div>
       </div>
 
-      <!-- PAGE 6 — Progression (LOCKED) -->
-      <div class="page-wrapper reveal">
+      <div id="progression-tab" class="day-panel">
         <div class="a4-page">
           <span class="page-number">06 / 07</span>
           <div class="page-title">نظام التقدم</div>
           <div class="page-subtitle">Progression Protocol — 8 Weeks</div>
-          <div class="prog-list" style="list-style:none; margin-top:14px;">
-            <div style="padding:12px 16px; background:rgba(255,255,255,0.03); border-radius:8px; border-right:2px solid var(--gold); color:var(--text-secondary); font-size:.88rem; margin-bottom:8px">✅ حقق أعلى تكرار → زد الوزن الأسبوع القادم</div>
-            <div style="padding:12px 16px; background:rgba(255,255,255,0.03); border-radius:8px; border-right:2px solid var(--text-muted); color:var(--text-secondary); font-size:.88rem; margin-bottom:8px">❌ لم تحقق → ابقَ على نفس الوزن</div>
-            <div style="padding:12px 16px; background:rgba(255,184,0,0.06); border-radius:8px; border-right:2px solid var(--gold); color:var(--text-secondary); font-size:.88rem; margin-bottom:8px">🔄 الأسبوع 7 → Deload (-15%)</div>
-            <div style="padding:12px 16px; background:rgba(255,255,255,0.03); border-radius:8px; border-right:2px solid var(--gold-dim); color:var(--text-secondary); font-size:.88rem">🚀 الأسبوع 8 → Final Push</div>
-          </div>
+          <ul class="prog-list" style="margin-top:14px;">
+            <li>✅ حقق أعلى تكرار → زد الوزن الأسبوع القادم</li>
+            <li>❌ لم تحقق → ابقَ على نفس الوزن</li>
+            <li>🔄 الأسبوع 7 → Deload (-15%)</li>
+            <li>🚀 الأسبوع 8 → Final Push</li>
+          </ul>
         </div>
       </div>
 
-      <!-- PAGE 7 — Tracking (LOCKED) -->
-      <div class="page-wrapper reveal">
+      <div id="tracking-tab" class="day-panel">
         <div class="a4-page">
           <span class="page-number">07 / 07</span>
-          <div class="page-title">جدول التتبع</div>
-          <div class="page-subtitle">Weekly Tracking Sheet</div>
-          <div class="tracking-table-wrap" style="margin-top:18px; border:none;">
-            <table class="tracking-table">
+          <div class="page-title">التتبع الأسبوعي</div>
+          <div class="page-subtitle">Editable Tracking + Session Completion</div>
+          <div class="tracking-table-wrap" style="margin-top:18px;">
+            <table class="tracking-table" id="editableTrackingTable">
+              <thead>
+                <tr><th>الأسبوع</th><th>التمرين</th><th>الوزن</th><th>التكرارات</th><th>ملاحظات</th></tr>
+              </thead>
+              <tbody id="trackingBody"></tbody>
+            </table>
+          </div>
+
+          <div class="tracking-table-wrap" style="margin-top:18px;">
+            <table class="session-table" id="sessionProgressTable">
               <thead>
                 <tr>
                   <th>الأسبوع</th>
-                  <th>التمرين</th>
-                  <th>الوزن</th>
-                  <th>التكرارات</th>
-                  <th>ملاحظات</th>
+                  <th>Day 1</th>
+                  <th>Day 2</th>
+                  <th>Day 3</th>
+                  <th>Day 4</th>
+                  <th>Day 5</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr><td>1</td><td></td><td></td><td></td><td></td></tr>
-                <tr><td>2</td><td></td><td></td><td></td><td></td></tr>
-                <tr><td>3</td><td></td><td></td><td></td><td></td></tr>
-                <tr><td>4</td><td></td><td></td><td></td><td></td></tr>
-                <tr><td>5</td><td></td><td></td><td></td><td></td></tr>
-              </tbody>
+              <tbody id="sessionBody"></tbody>
             </table>
           </div>
         </div>
       </div>
-
-    </div><!-- /pages-stack -->
+    </div>
   </div>
 </section>
 
@@ -1567,10 +1664,97 @@ if (navPreviewBtn) navPreviewBtn.addEventListener('click', function(e) {
   }
 });
 
-// Download/Save as PDF
-const printPdfBtn = document.getElementById('printPdfBtn');
-if (printPdfBtn) {
-  printPdfBtn.addEventListener('click', () => window.print());
+// Day tabs + quick jump
+const tabButtons = document.querySelectorAll('[data-tab-target]');
+const panels = document.querySelectorAll('.day-panel');
+const DAY_TAB_KEY = 'repplus_active_tab';
+
+function activateTab(tabId) {
+  panels.forEach(p => p.classList.toggle('active', p.id === tabId));
+  tabButtons.forEach(b => b.classList.toggle('active', b.dataset.tabTarget === tabId));
+  localStorage.setItem(DAY_TAB_KEY, tabId);
+}
+
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabId = btn.dataset.tabTarget;
+    activateTab(tabId);
+    document.getElementById('program')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+activateTab(localStorage.getItem(DAY_TAB_KEY) || 'day1');
+
+// Editable tracking table + persistence
+const TRACK_KEY = 'repplus_tracking_data_v1';
+const SESSION_KEY = 'repplus_session_done_v1';
+const trackingBody = document.getElementById('trackingBody');
+const sessionBody = document.getElementById('sessionBody');
+
+function loadJson(key, fallback) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || '');
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+const trackingData = loadJson(TRACK_KEY, Array.from({ length: 8 }, () => ({ exercise: '', weight: '', reps: '', notes: '' })));
+const sessionData = loadJson(SESSION_KEY, Array.from({ length: 8 }, () => ({ day1: false, day2: false, day3: false, day4: false, day5: false })));
+
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/\"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function saveTracking() { localStorage.setItem(TRACK_KEY, JSON.stringify(trackingData)); }
+function saveSessions() { localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData)); }
+
+if (trackingBody) {
+  trackingBody.innerHTML = trackingData.map((row, i) => `
+    <tr>
+      <td class="week-cell">${i + 1}</td>
+      <td><input class="editable-input" value="${esc(row.exercise)}" data-row="${i}" data-field="exercise" placeholder="Exercise" /></td>
+      <td><input class="editable-input" value="${esc(row.weight)}" data-row="${i}" data-field="weight" placeholder="Weight" /></td>
+      <td><input class="editable-input" value="${esc(row.reps)}" data-row="${i}" data-field="reps" placeholder="Reps" /></td>
+      <td><input class="editable-input" value="${esc(row.notes)}" data-row="${i}" data-field="notes" placeholder="Notes" /></td>
+    </tr>
+  `).join('');
+
+  trackingBody.querySelectorAll('.editable-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const row = Number(e.target.dataset.row);
+      const field = e.target.dataset.field;
+      trackingData[row][field] = e.target.value;
+      saveTracking();
+    });
+  });
+}
+
+if (sessionBody) {
+  sessionBody.innerHTML = sessionData.map((row, i) => `
+    <tr>
+      <td class="week-cell">${i + 1}</td>
+      <td style="text-align:center;"><input type="checkbox" class="done-check" data-row="${i}" data-day="day1" ${row.day1 ? 'checked' : ''}></td>
+      <td style="text-align:center;"><input type="checkbox" class="done-check" data-row="${i}" data-day="day2" ${row.day2 ? 'checked' : ''}></td>
+      <td style="text-align:center;"><input type="checkbox" class="done-check" data-row="${i}" data-day="day3" ${row.day3 ? 'checked' : ''}></td>
+      <td style="text-align:center;"><input type="checkbox" class="done-check" data-row="${i}" data-day="day4" ${row.day4 ? 'checked' : ''}></td>
+      <td style="text-align:center;"><input type="checkbox" class="done-check" data-row="${i}" data-day="day5" ${row.day5 ? 'checked' : ''}></td>
+    </tr>
+  `).join('');
+
+  sessionBody.querySelectorAll('.done-check').forEach(chk => {
+    chk.addEventListener('change', (e) => {
+      const row = Number(e.target.dataset.row);
+      const day = e.target.dataset.day;
+      sessionData[row][day] = e.target.checked;
+      saveSessions();
+    });
+  });
 }
 </script>
 
