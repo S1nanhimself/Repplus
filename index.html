@@ -28,8 +28,8 @@
   --radius-md: 14px;
   --radius-lg: 22px;
   --radius-xl: 32px;
-  --font-display: 'SF Arabic', 'Noto Kufi Arabic', 'Geeza Pro', 'Tahoma', 'Arial', sans-serif;
-  --font-body: 'SF Arabic', 'Noto Sans Arabic', 'Geeza Pro', 'Tahoma', 'Arial', sans-serif;
+  --font-display: 'Kohinoor Arabic', 'SF Arabic', 'Geeza Pro', 'Avenir Next', 'Tahoma', sans-serif;
+  --font-body: 'SF Arabic', 'Kohinoor Arabic', 'Geeza Pro', 'Avenir Next', 'Tahoma', sans-serif;
   --shadow-card: 0 8px 40px rgba(0,0,0,0.6);
   --shadow-gold: 0 0 40px rgba(255,184,0,0.12);
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -45,6 +45,8 @@ body {
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.7;
+  font-weight: 500;
+  letter-spacing: 0.1px;
   overflow-x: hidden;
 }
 
@@ -249,6 +251,7 @@ header {
   font-family: var(--font-display);
   font-size: clamp(2.4rem, 6vw, 4.2rem);
   font-weight: 900;
+  letter-spacing: -0.35px;
   line-height: 1.15;
   color: var(--text-primary);
   margin-bottom: 8px;
@@ -361,6 +364,7 @@ section {
   font-family: var(--font-display);
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
+  letter-spacing: -0.25px;
   line-height: 1.25;
   color: var(--text-primary);
   margin-bottom: 16px;
