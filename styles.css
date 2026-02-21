@@ -334,6 +334,31 @@ p {
   font-family: "Barlow", sans-serif;
 }
 
+.volume-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.volume-grid article {
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 14px;
+}
+
+.volume-grid h4 {
+  margin-bottom: 4px;
+}
+
+.volume-grid p {
+  color: #ffd28a;
+  font-family: "Barlow", sans-serif;
+  font-size: 1rem;
+}
+
 .workout-page {
   display: grid;
   align-content: start;
@@ -433,7 +458,8 @@ tbody tr:last-child td {
 
   .info-grid,
   .split-grid,
-  .stats-strip {
+  .stats-strip,
+  .volume-grid {
     grid-template-columns: 1fr;
   }
 
