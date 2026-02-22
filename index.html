@@ -148,14 +148,16 @@ header {
   box-shadow: 0 0 20px var(--gold-glow-strong);
 }
 
-.nav-print {
-  background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border-accent);
+.gym-toggle {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
 }
 
-.nav-print:hover {
-  background: rgba(255, 184, 0, 0.12);
+.gym-toggle.active {
+  background: var(--gold);
+  color: #080b10;
+  border-color: var(--gold);
 }
 
 /* ============================================
@@ -776,6 +778,71 @@ section {
   cursor: pointer;
 }
 
+.tracking-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tracking-controls label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.tracking-controls select {
+  background: rgba(255,255,255,0.03);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: var(--font-body);
+}
+
+.suggestion {
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 8px;
+  display: inline-flex;
+}
+
+.suggestion.up {
+  color: #0f3f10;
+  background: rgba(46, 204, 113, 0.25);
+  border: 1px solid rgba(46, 204, 113, 0.45);
+}
+
+.suggestion.hold {
+  color: #594100;
+  background: rgba(255, 184, 0, 0.22);
+  border: 1px solid rgba(255, 184, 0, 0.5);
+}
+
+body.gym-mode #why,
+body.gym-mode #terminology,
+body.gym-mode #info-boxes,
+body.gym-mode #progression,
+body.gym-mode #faq,
+body.gym-mode footer {
+  display: none !important;
+}
+
+body.gym-mode #hero {
+  min-height: auto;
+  padding: 28px 0 14px;
+}
+
+body.gym-mode #hero .hero-meta-pills,
+body.gym-mode #hero .hero-subtitle-line,
+body.gym-mode #hero .hero-brand {
+  display: none;
+}
+
+body.gym-mode #program {
+  padding-top: 22px;
+}
+
 /* ============================================
    PROGRESSION & ALTERNATIVES
 ============================================ */
@@ -1081,7 +1148,6 @@ footer {
   }
   header,
   .hero-glow,
-  .nav-print,
   .nav-cta,
   .cta-primary,
   footer {
@@ -1110,6 +1176,7 @@ footer {
   <div class="container header-inner">
     <div class="brand-logo"><img src="assets/logo.png" alt="عدة بلس"></div>
     <div class="header-actions">
+      <button class="nav-cta gym-toggle" id="gymModeBtn" type="button">Gym Mode</button>
       <a href="#program" class="nav-cta">استعرض البرنامج</a>
     </div>
   </div>
@@ -1437,10 +1504,33 @@ footer {
           <span class="page-number">07 / 07</span>
           <div class="page-title">التتبع الأسبوعي</div>
           <div class="page-subtitle">Editable Tracking + Session Completion</div>
+          <div class="tracking-controls">
+            <label>اليوم:
+              <select id="trackingDaySelect">
+                <option value="day1">Day 1</option>
+                <option value="day2">Day 2</option>
+                <option value="day3">Day 3</option>
+                <option value="day4">Day 4</option>
+                <option value="day5">Day 5</option>
+              </select>
+            </label>
+            <label>الأسبوع:
+              <select id="trackingWeekSelect">
+                <option value="1">Week 1</option>
+                <option value="2">Week 2</option>
+                <option value="3">Week 3</option>
+                <option value="4">Week 4</option>
+                <option value="5">Week 5</option>
+                <option value="6">Week 6</option>
+                <option value="7">Week 7</option>
+                <option value="8">Week 8</option>
+              </select>
+            </label>
+          </div>
           <div class="tracking-table-wrap" style="margin-top:18px;">
             <table class="tracking-table" id="editableTrackingTable">
               <thead>
-                <tr><th>الأسبوع</th><th>التمرين</th><th>الوزن</th><th>التكرارات</th><th>ملاحظات</th></tr>
+                <tr><th>الأسبوع</th><th>التمرين</th><th>الوزن</th><th>التكرارات</th><th>الاقتراح القادم</th><th>ملاحظات</th></tr>
               </thead>
               <tbody id="trackingBody"></tbody>
             </table>
@@ -1680,11 +1770,17 @@ if (navPreviewBtn) navPreviewBtn.addEventListener('click', function(e) {
 const tabButtons = document.querySelectorAll('[data-tab-target]');
 const panels = document.querySelectorAll('.day-panel');
 const DAY_TAB_KEY = 'repplus_active_tab';
+const GYM_MODE_KEY = 'repplus_gym_mode';
 
 function activateTab(tabId) {
   panels.forEach(p => p.classList.toggle('active', p.id === tabId));
   tabButtons.forEach(b => b.classList.toggle('active', b.dataset.tabTarget === tabId));
   localStorage.setItem(DAY_TAB_KEY, tabId);
+  const daySelect = document.getElementById('trackingDaySelect');
+  if (daySelect && /^day[1-5]$/.test(tabId)) {
+    daySelect.value = tabId;
+    renderTrackingRows();
+  }
 }
 
 tabButtons.forEach(btn => {
@@ -1697,11 +1793,27 @@ tabButtons.forEach(btn => {
 
 activateTab(localStorage.getItem(DAY_TAB_KEY) || 'day1');
 
-// Editable tracking table + persistence
+// Gym mode toggle
+const gymModeBtn = document.getElementById('gymModeBtn');
+function applyGymMode(enabled) {
+  document.body.classList.toggle('gym-mode', enabled);
+  if (gymModeBtn) gymModeBtn.classList.toggle('active', enabled);
+  localStorage.setItem(GYM_MODE_KEY, enabled ? '1' : '0');
+}
+applyGymMode(localStorage.getItem(GYM_MODE_KEY) === '1');
+if (gymModeBtn) {
+  gymModeBtn.addEventListener('click', () => {
+    applyGymMode(!document.body.classList.contains('gym-mode'));
+  });
+}
+
+// Editable tracking table + persistence + progression suggestions
 const TRACK_KEY = 'repplus_tracking_data_v1';
 const SESSION_KEY = 'repplus_session_done_v1';
 const trackingBody = document.getElementById('trackingBody');
 const sessionBody = document.getElementById('sessionBody');
+const trackingDaySelect = document.getElementById('trackingDaySelect');
+const trackingWeekSelect = document.getElementById('trackingWeekSelect');
 
 function loadJson(key, fallback) {
   try {
@@ -1712,7 +1824,7 @@ function loadJson(key, fallback) {
   }
 }
 
-const trackingData = loadJson(TRACK_KEY, Array.from({ length: 8 }, () => ({ exercise: '', weight: '', reps: '', notes: '' })));
+const trackingData = loadJson(TRACK_KEY, []);
 const sessionData = loadJson(SESSION_KEY, Array.from({ length: 8 }, () => ({ day1: false, day2: false, day3: false, day4: false, day5: false })));
 
 function esc(value) {
@@ -1726,26 +1838,99 @@ function esc(value) {
 function saveTracking() { localStorage.setItem(TRACK_KEY, JSON.stringify(trackingData)); }
 function saveSessions() { localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData)); }
 
-if (trackingBody) {
-  trackingBody.innerHTML = trackingData.map((row, i) => `
-    <tr>
-      <td class="week-cell">${i + 1}</td>
-      <td><input class="editable-input" value="${esc(row.exercise)}" data-row="${i}" data-field="exercise" placeholder="Exercise" /></td>
-      <td><input class="editable-input" value="${esc(row.weight)}" data-row="${i}" data-field="weight" placeholder="Weight" /></td>
-      <td><input class="editable-input" value="${esc(row.reps)}" data-row="${i}" data-field="reps" placeholder="Reps" /></td>
-      <td><input class="editable-input" value="${esc(row.notes)}" data-row="${i}" data-field="notes" placeholder="Notes" /></td>
-    </tr>
-  `).join('');
+function getExercisesForDay(dayId) {
+  const panel = document.getElementById(dayId);
+  if (!panel) return [];
+  return [...panel.querySelectorAll('.ex-table tbody tr')].map((row) => {
+    const name = row.querySelector('.ex-name')?.textContent?.trim() || '';
+    const reps = row.querySelector('.ex-reps')?.textContent?.trim() || '';
+    return { name, reps };
+  });
+}
+
+function topRepFromRange(rangeText) {
+  const nums = (rangeText.match(/\d+/g) || []).map(Number);
+  if (!nums.length) return null;
+  return Math.max(...nums);
+}
+
+function keyFor(day, week, exercise) {
+  return `${day}::${week}::${exercise}`;
+}
+
+function getTrackRecord(day, week, exercise) {
+  const key = keyFor(day, week, exercise);
+  return trackingData.find(r => r.key === key) || { key, weight: '', reps: '', notes: '' };
+}
+
+function upsertTrackRecord(record) {
+  const idx = trackingData.findIndex(r => r.key === record.key);
+  if (idx === -1) trackingData.push(record);
+  else trackingData[idx] = record;
+  saveTracking();
+}
+
+function suggestionFromReps(repsValue, rangeText) {
+  if (!repsValue) return '';
+  const entered = Number(repsValue);
+  const top = topRepFromRange(rangeText);
+  if (!Number.isFinite(entered) || !top) return '';
+  if (entered >= top) return 'up';
+  return 'hold';
+}
+
+function renderTrackingRows() {
+  if (!trackingBody || !trackingDaySelect || !trackingWeekSelect) return;
+  const day = trackingDaySelect.value;
+  const week = Number(trackingWeekSelect.value);
+  const exercises = getExercisesForDay(day);
+  trackingBody.innerHTML = exercises.map((ex) => {
+    const rec = getTrackRecord(day, week, ex.name);
+    const suggestion = suggestionFromReps(rec.reps, ex.reps);
+    const suggestionHtml = suggestion === 'up'
+      ? '<span class="suggestion up">زد الوزن الأسبوع القادم</span>'
+      : suggestion === 'hold'
+      ? '<span class="suggestion hold">ثبّت الوزن</span>'
+      : '';
+    return `
+      <tr>
+        <td class="week-cell">${week}</td>
+        <td class="ex-name">${esc(ex.name)}</td>
+        <td><input class="editable-input" value="${esc(rec.weight)}" data-key="${esc(rec.key)}" data-field="weight" placeholder="Weight" /></td>
+        <td><input class="editable-input" value="${esc(rec.reps)}" data-key="${esc(rec.key)}" data-field="reps" data-range="${esc(ex.reps)}" placeholder="${esc(ex.reps)}" /></td>
+        <td class="suggestion-cell">${suggestionHtml}</td>
+        <td><input class="editable-input" value="${esc(rec.notes)}" data-key="${esc(rec.key)}" data-field="notes" placeholder="Notes" /></td>
+      </tr>
+    `;
+  }).join('');
 
   trackingBody.querySelectorAll('.editable-input').forEach(input => {
     input.addEventListener('input', (e) => {
-      const row = Number(e.target.dataset.row);
+      const key = e.target.dataset.key;
       const field = e.target.dataset.field;
-      trackingData[row][field] = e.target.value;
-      saveTracking();
+      const record = trackingData.find(r => r.key === key) || { key, weight: '', reps: '', notes: '' };
+      record[field] = e.target.value;
+      upsertTrackRecord(record);
+      if (field === 'reps') {
+        const range = e.target.dataset.range || '';
+        const suggestion = suggestionFromReps(e.target.value, range);
+        const cell = e.target.closest('tr')?.querySelector('.suggestion-cell');
+        if (cell) {
+          cell.innerHTML = suggestion === 'up'
+            ? '<span class="suggestion up">زد الوزن الأسبوع القادم</span>'
+            : suggestion === 'hold'
+            ? '<span class="suggestion hold">ثبّت الوزن</span>'
+            : '';
+        }
+      }
     });
   });
 }
+
+if (trackingDaySelect) trackingDaySelect.addEventListener('change', renderTrackingRows);
+if (trackingWeekSelect) trackingWeekSelect.addEventListener('change', renderTrackingRows);
+if (trackingDaySelect) trackingDaySelect.value = (/^day[1-5]$/.test(localStorage.getItem(DAY_TAB_KEY) || '') ? localStorage.getItem(DAY_TAB_KEY) : 'day1');
+renderTrackingRows();
 
 if (sessionBody) {
   sessionBody.innerHTML = sessionData.map((row, i) => `
