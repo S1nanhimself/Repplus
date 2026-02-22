@@ -1530,7 +1530,7 @@ footer {
           <div class="tracking-table-wrap" style="margin-top:18px;">
             <table class="tracking-table" id="editableTrackingTable">
               <thead>
-                <tr><th>الأسبوع</th><th>التمرين</th><th>الوزن</th><th>التكرارات</th><th>الاقتراح القادم</th><th>ملاحظات</th></tr>
+                <tr><th>الأسبوع</th><th>التمرين</th><th>السيت</th><th>الوزن</th><th>التكرارات</th><th>الاقتراح القادم</th><th>ملاحظات</th></tr>
               </thead>
               <tbody id="trackingBody"></tbody>
             </table>
@@ -1863,8 +1863,16 @@ function getExercisesForDay(dayId) {
   return [...panel.querySelectorAll('.ex-table tbody tr')].map((row) => {
     const name = row.querySelector('.ex-name')?.textContent?.trim() || '';
     const reps = row.querySelector('.ex-reps')?.textContent?.trim() || '';
-    return { name, reps };
+    const setsText = row.querySelector('.ex-sets')?.textContent?.trim() || '1';
+    const sets = Math.max(1, parseSetCount(setsText));
+    return { name, reps, sets };
   });
+}
+
+function parseSetCount(setsText) {
+  const nums = (setsText.match(/\d+/g) || []).map(Number);
+  if (!nums.length) return 1;
+  return Math.max(...nums);
 }
 
 function topRepFromRange(rangeText) {
@@ -1873,12 +1881,12 @@ function topRepFromRange(rangeText) {
   return Math.max(...nums);
 }
 
-function keyFor(day, week, exercise) {
-  return `${day}::${week}::${exercise}`;
+function keyFor(day, week, exercise, setNo) {
+  return `${day}::${week}::${exercise}::set${setNo}`;
 }
 
-function getTrackRecord(day, week, exercise) {
-  const key = keyFor(day, week, exercise);
+function getTrackRecord(day, week, exercise, setNo) {
+  const key = keyFor(day, week, exercise, setNo);
   return trackingData.find(r => r.key === key) || { key, weight: '', reps: '', notes: '' };
 }
 
@@ -1903,25 +1911,30 @@ function renderTrackingRows() {
   const day = trackingDaySelect.value;
   const week = Number(trackingWeekSelect.value);
   const exercises = getExercisesForDay(day);
-  trackingBody.innerHTML = exercises.map((ex) => {
-    const rec = getTrackRecord(day, week, ex.name);
-    const suggestion = suggestionFromReps(rec.reps, ex.reps);
-    const suggestionHtml = suggestion === 'up'
-      ? '<span class="suggestion up">زد الوزن الأسبوع القادم</span>'
-      : suggestion === 'hold'
-      ? '<span class="suggestion hold">ثبّت الوزن</span>'
-      : '';
-    return `
-      <tr>
-        <td class="week-cell">${week}</td>
-        <td class="ex-name">${esc(ex.name)}</td>
-        <td><input class="editable-input" value="${esc(rec.weight)}" data-key="${esc(rec.key)}" data-field="weight" placeholder="Weight" /></td>
-        <td><input class="editable-input" value="${esc(rec.reps)}" data-key="${esc(rec.key)}" data-field="reps" data-range="${esc(ex.reps)}" placeholder="${esc(ex.reps)}" /></td>
-        <td class="suggestion-cell">${suggestionHtml}</td>
-        <td><input class="editable-input" value="${esc(rec.notes)}" data-key="${esc(rec.key)}" data-field="notes" placeholder="Notes" /></td>
-      </tr>
-    `;
-  }).join('');
+  const rows = [];
+  exercises.forEach((ex) => {
+    for (let setNo = 1; setNo <= ex.sets; setNo += 1) {
+      const rec = getTrackRecord(day, week, ex.name, setNo);
+      const suggestion = suggestionFromReps(rec.reps, ex.reps);
+      const suggestionHtml = suggestion === 'up'
+        ? '<span class="suggestion up">زد الوزن الأسبوع القادم</span>'
+        : suggestion === 'hold'
+        ? '<span class="suggestion hold">ثبّت الوزن</span>'
+        : '';
+      rows.push(`
+        <tr>
+          <td class="week-cell">${week}</td>
+          <td class="ex-name">${esc(ex.name)}</td>
+          <td class="week-cell">${setNo}</td>
+          <td><input class="editable-input" value="${esc(rec.weight)}" data-key="${esc(rec.key)}" data-field="weight" placeholder="Weight" /></td>
+          <td><input class="editable-input" value="${esc(rec.reps)}" data-key="${esc(rec.key)}" data-field="reps" data-range="${esc(ex.reps)}" placeholder="${esc(ex.reps)}" /></td>
+          <td class="suggestion-cell">${suggestionHtml}</td>
+          <td><input class="editable-input" value="${esc(rec.notes)}" data-key="${esc(rec.key)}" data-field="notes" placeholder="Notes" /></td>
+        </tr>
+      `);
+    }
+  });
+  trackingBody.innerHTML = rows.join('');
 
   trackingBody.querySelectorAll('.editable-input').forEach(input => {
     input.addEventListener('input', (e) => {
